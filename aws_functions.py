@@ -1,55 +1,43 @@
 import os
 import boto3
 from dotenv import load_dotenv
-
 load_dotenv()
 
-class AWSFunctions:
-    _session = None
-    _textract_client = None
-    _s3_client = None
+os.environ['AWS_SHARED_CREDENTIALS_FILE'] = '.aws/credentials'
+os.environ['AWS_CONFIG_FILE'] = '.aws/config'
+bucket_name = os.getenv('BUCKET_NAME', 'volkers-textract')
 
-    @classmethod
-    def get_session(cls):
-        if cls._session is None:
-            # Create a session with a specific profile
-            cls._session = boto3.Session(profile_name='default')
-        return cls._session
+def get_session():
+    # Create a session with a specific profile
+    session = boto3.Session(profile_name='default')
 
-    @classmethod
-    def get_textract_client(cls):
-        if cls._textract_client is None:
-            cls._textract_client = cls.get_session().client('textract', 'us-east-1')
-        return cls._textract_client
+    return session
 
-    @classmethod
-    def get_s3_client(cls):
-        if cls._s3_client is None:
-            cls._s3_client = cls.get_session().client('s3')
-        return cls._s3_client
+def upload_file(bucket_name, file_name):
+    # Upload the file to S3
+    session = get_session()
+    try:
+        s3 = session.client('s3')
+        s3.upload_file(file_name, bucket_name, file_name)
+        
+        return True
+    except Exception as e:
+        return False
 
-    @classmethod
-    def upload_file(cls, bucket_name, file_path, file_name):
-        try:
-            s3_client = cls.get_s3_client()
-            s3_client.upload_file(file_path, bucket_name, file_name)
-            return True
-        except Exception as e:
-            return False
+def process_file_textract(bucket_name, file_name):
+    # Process the file using Textract
+    try:
 
-    @classmethod
-    def process_file_textract(cls, bucket_name, file_name):
-        try:
-            textract_client = cls.get_textract_client()
-            response = textract_client.analyze_document(
-                Document={
-                    'S3Object': {
-                        'Bucket': bucket_name,
-                        'Name': file_name
-                    }
-                },
-                FeatureTypes=['TABLES', 'FORMS']
-            )
-            return response
-        except Exception as e:
-            return None
+        response = textract.analyze_document(
+            Document={
+                'S3Object': {
+                    'Bucket': bucket_name,
+                    'Name': file_name
+                }
+            },
+            FeatureTypes=['TABLES', 'FORMS']
+        )
+        
+        return response
+    except Exception as e:
+        return None
