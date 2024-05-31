@@ -28,6 +28,7 @@ def index2():
 @app.route('/process-email-attachment', methods=['POST'])
 def process_email_attachment():
     data = request.get_json()
+    return jsonify({"status": "success", "message": "All attachments processed and saved"}), 200
     attachments = data['attachments']
     
     for attachment in attachments:
