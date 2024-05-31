@@ -14,8 +14,8 @@ UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 ATTACHMENT_DIR = 'attachments'
 
-os.environ['AWS_SHARED_CREDENTIALS_FILE'] = '.aws/credentials'
-os.environ['AWS_CONFIG_FILE'] = '.aws/config'
+os.environ['AWS_SHARED_CREDENTIALS_FILE'] = 'mysite/.aws/credentials'
+os.environ['AWS_CONFIG_FILE'] = 'mysite/.aws/config'
 
 @app.route('/')
 def index():
