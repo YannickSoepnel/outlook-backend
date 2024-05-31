@@ -40,7 +40,7 @@ def process_email_attachment():
         
         # Decode the base64 content
         file_data = base64.b64decode(content)
-        
+        upload_attachment_to_s3(name)
         # Save the file
         file_path = os.path.join(UPLOAD_FOLDER, name)
         with open(file_path, 'wb') as file:
