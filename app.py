@@ -71,6 +71,7 @@ def upload_file(file_name, file_content):
         print(response)
         return True
     except Exception as e:
+        print(e)
         return False
 
 # def upload_attachment_to_s3(file_name, file_content):
