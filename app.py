@@ -7,6 +7,10 @@ import os
 app = Flask(__name__)
 CORS(app)  # Apply CORS to all routes by default
 
+UPLOAD_FOLDER = 'uploads'
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+ATTACHMENT_DIR = 'attachments'
+
 @app.route('/')
 def index():
     return jsonify({"data": "success3"})
@@ -21,37 +25,27 @@ def index2():
     else:
         return jsonify({"data": "GET GOOD"})   
 
-ATTACHMENT_DIR = 'attachments'
+@app.route('/process-email-attachment', methods=['POST'])
+def process_email_attachment():
+    data = request.get_json()
+    attachments = data['attachments']
+    
+    for attachment in attachments:
+        name = attachment['name']
+        content = attachment['content']
+        format = attachment['format']
+        
+        # Decode the base64 content
+        file_data = base64.b64decode(content)
+        
+        # Save the file
+        file_path = os.path.join(UPLOAD_FOLDER, name)
+        with open(file_path, 'wb') as file:
+            file.write(file_data)
+        
+        print(f"Saved attachment: {name}")
 
-@app.route('/process-email-attachment', methods=['GET', 'POST'])
-def index3():
-    if request.method == 'POST':
-        try:
-            # Access uploaded attachment file object
-            attachment_file = request.files['attachment']  # Assuming 'attachment' is the key
-
-            if attachment_file:
-                # Generate a unique filename and save the attachment
-                filename = f'{os.urandom(16).hex()}.{attachment_file.filename.split(".")[-1]}'
-                attachment_path = os.path.join(ATTACHMENT_DIR, filename)
-                attachment_file.save(attachment_path)
-
-                # Process the attachment (replace with your processing logic)
-                processed_data = f"Successfully processed attachment: {filename}"
-                print(processed_data)  # Log for debugging
-
-                return jsonify({"data": processed_data})
-            else:
-                return jsonify({"data": "No attachment found in the request."})
-
-        except Exception as e:
-            # Handle potential errors during retrieval or saving
-            error_message = f"Error processing attachment: {e}"
-            print(error_message)  # Log for debugging
-            return jsonify({"error": error_message}), 500  # Internal Server Error
-
-    else:
-        return jsonify({"data": "GET method not supported."})
+    return jsonify({"status": "success", "message": "All attachments processed and saved"}), 200
 
 if __name__ == '__main__':
     app.run(host='192.168.178.234', port=8000, debug=True)
