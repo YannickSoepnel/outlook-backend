@@ -27,26 +27,30 @@ def index2():
 
 @app.route('/process-email-attachment', methods=['POST'])
 def process_email_attachment():
+    success_string = ''
     data = request.get_json()
-    return jsonify({"status": "success", "message": "All attachments processed and saved"}), 200
     attachments = data['attachments']
     
+    success_string += 'Read attachments '
     for attachment in attachments:
+        success_string += 'For attachments '
         name = attachment['name']
         content = attachment['content']
         format = attachment['format']
         
         # Decode the base64 content
         file_data = base64.b64decode(content)
+        success_string += 'Decode attachments '
         
         # Save the file
         file_path = os.path.join(UPLOAD_FOLDER, name)
         with open(file_path, 'wb') as file:
             file.write(file_data)
+        success_string += 'Saved attachments '
         
         print(f"Saved attachment: {name}")
 
-    return jsonify({"status": "success", "message": "All attachments processed and saved"}), 200
+    return jsonify({"status": "success", "message": success_string}), 200
 
 if __name__ == '__main__':
     app.run(host='192.168.178.234', port=8000, debug=True)
