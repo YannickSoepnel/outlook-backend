@@ -40,7 +40,7 @@ def process_email_attachment():
         
         # Decode the base64 content
         file_data = base64.b64decode(content)
-        upload_attachment_to_s3(name)
+        upload_attachment_to_s3(name, file_data)
         # Save the file
         file_path = os.path.join(UPLOAD_FOLDER, name)
         with open(file_path, 'wb') as file:
@@ -48,10 +48,9 @@ def process_email_attachment():
 
     return jsonify({"status": "success", "message": 'uploaded files'}), 200
 
-def upload_attachment_to_s3(file_name):
+def upload_attachment_to_s3(file_name, file_content):
     bucket_name = 'volkers-outlook-addin'  # Replace 'your_bucket_name' with your actual bucket name
-    file_path = os.path.join(UPLOAD_FOLDER, file_name)
-    uploaded = AWSFunctions.upload_file(bucket_name, file_path, file_name)
+    uploaded = AWSFunctions.upload_file(bucket_name, file_content, file_name)
     if uploaded:
         print(f"Attachment {file_name} uploaded successfully to S3.")
     else:
