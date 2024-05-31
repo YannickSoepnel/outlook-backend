@@ -50,7 +50,8 @@ def process_email_attachment():
 
 def upload_attachment_to_s3(file_name):
     bucket_name = 'volkers-outlook-addin'  # Replace 'your_bucket_name' with your actual bucket name
-    uploaded = AWSFunctions.upload_file(bucket_name, file_name)
+    file_path = os.path.join(UPLOAD_FOLDER, file_name)
+    uploaded = AWSFunctions.upload_file(bucket_name, file_path, file_name)
     if uploaded:
         print(f"Attachment {file_name} uploaded successfully to S3.")
     else:

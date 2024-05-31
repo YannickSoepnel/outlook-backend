@@ -29,10 +29,10 @@ class AWSFunctions:
         return cls._s3_client
 
     @classmethod
-    def upload_file(cls, bucket_name, file_name):
+    def upload_file(cls, bucket_name, file_path, file_name):
         try:
             s3_client = cls.get_s3_client()
-            s3_client.upload_file(file_name, bucket_name, file_name)
+            s3_client.upload_file(file_path, bucket_name, file_name)
             return True
         except Exception as e:
             return False
