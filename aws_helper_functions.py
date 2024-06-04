@@ -99,47 +99,57 @@ def generate_table_dataframe(table_block, blocks_map, table_index):
     return df
 
 def process_textract_response(textract_response):
-    blocks = textract_response['Blocks']
-    blocks_map = {}
-    key_map = {}
-    value_map = {}
-    table_blocks = []
+    try:
+        blocks = textract_response['Blocks']
+        blocks_map = {}
+        key_map = {}
+        value_map = {}
+        table_blocks = []
 
-    for block in blocks:
-        blocks_map[block['Id']] = block
-        if block['BlockType'] == "KEY_VALUE_SET":
-            if 'KEY' in block['EntityTypes']:
-                key_map[block['Id']] = block
-            else:
-                value_map[block['Id']] = block
-        if block['BlockType'] == "TABLE":
-            table_blocks.append(block)
+        for block in blocks:
+            blocks_map[block['Id']] = block
+            if block['BlockType'] == "KEY_VALUE_SET":
+                if 'KEY' in block['EntityTypes']:
+                    key_map[block['Id']] = block
+                else:
+                    value_map[block['Id']] = block
+            if block['BlockType'] == "TABLE":
+                table_blocks.append(block)
 
-    kvs = get_kv_relationship(key_map, value_map, blocks_map)
+        kvs = get_kv_relationship(key_map, value_map, blocks_map)
 
-    # table_dataframes = generate_table_dataframes(table_blocks, blocks_map)
-    data_frames = generate_table_dataframes(table_blocks, blocks_map)
+        # table_dataframes = generate_table_dataframes(table_blocks, blocks_map)
+        data_frames = generate_table_dataframes(table_blocks, blocks_map)
 
-    table_strings = ['' for _ in range(5)]
-    table_count = 0
+        table_strings = ['' for _ in range(5)]
+        table_count = 0
 
-    for df in data_frames:
-        if len(df.columns) > 2:
-            table_string = ''
-            for index, row in df.iterrows():
-                for column in df.columns:
-                    table_string += f"{column}: {row[column]}\n"
-                table_string += "\n"
-            table_strings[table_count] = table_string
-            table_count += 1
-            if table_count >= 5:
-                break
+        for df in data_frames:
+            if len(df.columns) > 2:
+                table_string = ''
+                for index, row in df.iterrows():
+                    for column in df.columns:
+                        table_string += f"{column}: {row[column]}\n"
+                    table_string += "\n"
+                table_strings[table_count] = table_string
+                table_count += 1
+                if table_count >= 5:
+                    break
 
-    return {
-        'kvs': kvs,
-        'table_1': table_strings[0],
-        'table_2': table_strings[1],
-        'table_3': table_strings[2],
-        'table_4': table_strings[3],
-        'table_5': table_strings[4]
-    }
+        return {
+            'kvs': kvs,
+            'table_1': table_strings[0],
+            'table_2': table_strings[1],
+            'table_3': table_strings[2],
+            'table_4': table_strings[3],
+            'table_5': table_strings[4]
+        }
+    except:
+        return {
+            'kvs': {},
+            'table_1': '',
+            'table_2': '',
+            'table_3': '',
+            'table_4': '',
+            'table_5': ''
+        }

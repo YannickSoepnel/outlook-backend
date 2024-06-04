@@ -51,6 +51,10 @@ def process_email_attachment():
         file_data = base64.b64decode(content)
         upload_attachment_to_s3(name, file_data)
 
+        file_path = os.path.join(UPLOAD_FOLDER, name)
+        with open(file_path, 'wb') as file:
+            file.write(file_data)
+
     for attachment in attachments:
         aws_textract_response = AWSFunctions.process_file_textract(attachment['name'])
 
