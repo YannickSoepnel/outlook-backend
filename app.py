@@ -20,7 +20,7 @@ ATTACHMENT_DIR = 'attachments'
 
 os.environ['AWS_SHARED_CREDENTIALS_FILE'] = 'mysite/.aws/credentials'
 os.environ['AWS_CONFIG_FILE'] = 'mysite/.aws/config'
-os.environ['OPENAI_API_KEY'] = os.getenv('AWS_SECRET_ACCESS_KEY')
+os.environ['OPENAI_API_KEY'] = os.getenv('OPENAI_API_KEY')
 
 @app.route('/')
 def index():
