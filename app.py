@@ -53,7 +53,6 @@ def process_email_attachment():
     for attachment in attachments:
         aws_textract_response = AWSFunctions.process_file_textract(attachment['name'])
         print('aws_textract_response')
-        print(aws_textract_response)
         attachment_dataframe = aws_helper_functions.process_textract_response(aws_textract_response)
         print('attachment_dataframe')
         print(attachment_dataframe)
