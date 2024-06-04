@@ -53,7 +53,7 @@ comments_no_default = {
         },
         "barcode": {
           "ean_barcode": "Order form: EAN/UPC-code",
-          "ean_barcode_type": "Default: EAN13, if empty ean_barcode: \"Geen barcode\""
+          "ean_barcode_type": "Default: EAN13, if empty ean_barcode put: Geen barcode"
         }
       }
     },
