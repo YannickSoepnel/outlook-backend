@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 import base64
 load_dotenv()
 import os
-# from aws_functions import AWSFunctions
+from aws_functions import AWSFunctions
 import boto3
 
 app = Flask(__name__)
@@ -43,7 +43,9 @@ def process_email_attachment():
         
         # Decode the base64 content
         file_data = base64.b64decode(content)
-        upload_file(name, file_data)
+        # upload_file(name, file_data)
+
+        upload_attachment_to_s3(name, file_data)
         # Save the file
         file_path = os.path.join(UPLOAD_FOLDER, name)
         with open(file_path, 'wb') as file:
@@ -56,6 +58,13 @@ def get_session():
     session = boto3.Session(profile_name='default')
 
     return session
+
+def upload_attachment_to_s3(file_name, file_content):
+    uploaded = AWSFunctions.upload_file(file_name, file_content)
+    if uploaded:
+        print(f"Attachment {file_name} uploaded successfully to S3.")
+    else:
+        print(f"Failed to upload attachment {file_name} to S3.")
 
 def upload_file(file_name, file_content):
     # Upload the file to S3
