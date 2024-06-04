@@ -5,7 +5,9 @@ import base64
 load_dotenv()
 import os
 from aws_functions import AWSFunctions
+import aws_helper_functions
 import boto3
+import pandas as pd
 
 app = Flask(__name__)
 CORS(app)  # Apply CORS to all routes by default
@@ -33,8 +35,11 @@ def index2():
 
 @app.route('/process-email-attachment', methods=['POST'])
 def process_email_attachment():
+    sender_email = 'sender@example.com'
     data = request.get_json()
     attachments = data['attachments']
+
+    df = pd.DataFrame(columns=['sender_email', 'filename'])
     
     for attachment in attachments:
         name = attachment['name']
@@ -43,21 +48,30 @@ def process_email_attachment():
         
         # Decode the base64 content
         file_data = base64.b64decode(content)
-        # upload_file(name, file_data)
-
         upload_attachment_to_s3(name, file_data)
-        # Save the file
-        file_path = os.path.join(UPLOAD_FOLDER, name)
-        with open(file_path, 'wb') as file:
-            file.write(file_data)
 
+    for attachment in attachments:
+        aws_textract_response = AWSFunctions.process_file_textract(attachment['name'])
+
+        attachment_dataframe = aws_helper_functions.process_textract_response(aws_textract_response)
+
+        new_row = {
+            'sender_email': sender_email,
+            'filename': attachment['name'],
+            'kvs': attachment_dataframe['kvs'],
+            'table_1': attachment_dataframe['table_1'],
+            'table_2': attachment_dataframe['table_2'],
+            'table_3': attachment_dataframe['table_3'],
+            'table_4': attachment_dataframe['table_4'],
+            'table_5': attachment_dataframe['table_5'],
+        }
+
+        new_df = pd.DataFrame([new_row])
+
+        df = pd.concat([df, new_df], ignore_index=True)
+
+    df.to_csv('attachment_data.csv', index=False)
     return jsonify({"status": "success", "message": 'uploaded files'}), 200
-
-def get_session():
-    # Create a session with a specific profile
-    session = boto3.Session(profile_name='default')
-
-    return session
 
 def upload_attachment_to_s3(file_name, file_content):
     uploaded = AWSFunctions.upload_file(file_name, file_content)
@@ -65,31 +79,6 @@ def upload_attachment_to_s3(file_name, file_content):
         print(f"Attachment {file_name} uploaded successfully to S3.")
     else:
         print(f"Failed to upload attachment {file_name} to S3.")
-
-def upload_file(file_name, file_content):
-    # Upload the file to S3
-    bucket_name = 'volkers-outlook-addin'
-    session = get_session()
-    try:
-        s3 = session.client('s3')
-        response = s3.put_object(
-            Bucket=bucket_name,
-            Key=file_name,
-            Body=file_content
-        )
-        print(response)
-        return True
-    except Exception as e:
-        print(e)
-        return False
-
-# def upload_attachment_to_s3(file_name, file_content):
-#     bucket_name = 'volkers-outlook-addin'  # Replace 'your_bucket_name' with your actual bucket name
-#     uploaded = AWSFunctions.upload_file(bucket_name, file_content, file_name)
-#     if uploaded:
-#         print(f"Attachment {file_name} uploaded successfully to S3.")
-#     else:
-#         print(f"Failed to upload attachment {file_name} to S3.")
 
 if __name__ == '__main__':
     app.run(host='192.168.178.234', port=8000, debug=True)

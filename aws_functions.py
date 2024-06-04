@@ -49,7 +49,8 @@ class AWSFunctions:
             return False
 
     @classmethod
-    def process_file_textract(cls, bucket_name, file_name):
+    def process_file_textract(cls, file_name):
+        bucket_name = 'volkers-outlook-addin'
         try:
             textract_client = cls.get_textract_client()
             response = textract_client.analyze_document(
