@@ -172,7 +172,7 @@ default_order_form = {
 }
 
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
-
+print(f"OPEN_API_KEY: {OPENAI_API_KEY}")
 client = openai.OpenAI(
     # This is the default and can be omitted
     api_key=OPENAI_API_KEY
