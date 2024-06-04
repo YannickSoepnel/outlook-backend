@@ -265,6 +265,9 @@ def process_gpt(df, email):
 
 def combine_default_order_form(default_order_form, gpt_response):
     try:
+        print('')
+        print('')
+        print(gpt_response)
         merged = merge(default_order_form, gpt_response)
         delivery_date = datetime.now().strftime("%d-%m-%Y")
 
@@ -273,6 +276,10 @@ def combine_default_order_form(default_order_form, gpt_response):
 
         for color in merged['order']['items']['item']['plates']['plate']['color']:
             color['amount'] = "1"
+
+        print('')
+        print('')
+        print(merged)
         return merged
     except Exception as e:
         print(e)
