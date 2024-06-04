@@ -59,10 +59,10 @@ comments_no_default = {
 
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
-client = openai.OpenAI(
-    # This is the default and can be omitted
-    api_key=OPENAI_API_KEY
-)
+# client = openai.OpenAI(
+#     # This is the default and can be omitted
+#     api_key=OPENAI_API_KEY
+# )
 
 def process_gpt(df, email):
     try:
