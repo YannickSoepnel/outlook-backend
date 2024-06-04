@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 import json5
-from openai import OpenAi
+import openai
 import json
 from dotenv import load_dotenv
 load_dotenv()
@@ -59,7 +59,7 @@ comments_no_default = {
 
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
-client = OpenAI(
+client = openai.OpenAI(
     # This is the default and can be omitted
     api_key=OPENAI_API_KEY
 )
