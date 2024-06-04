@@ -1,10 +1,14 @@
 import os
+from datetime import datetime
+
 import pandas as pd
 import json5
 import openai
 import json
 from dotenv import load_dotenv
 load_dotenv()
+from mergedeep import merge
+
 
 comments_no_default = {
   "order": {
@@ -57,12 +61,122 @@ comments_no_default = {
   }
 }
 
+default_order_form = {
+  "order": {
+    "order_info": {
+      "delivery_date": "[current date] + 1",
+    },
+    "addresses": {
+      "shipping": {
+        "contact": "Ap Vriend",
+        "company_name": "Altacel",
+        "address": "Gemeenschapspolderweg",
+        "address_number": "34",
+        "address_number_add": "",
+        "zipcode": "1382GR",
+        "city": "Weesp",
+        "country": "Nederland"
+      },
+      "invoice": {
+        "contact": "Financiële administratie",
+        "company_name": "Altacel",
+        "address": "Postbus",
+        "address_number": "93",
+        "address_number_add": "",
+        "zipcode": "1380 AB",
+        "city": "Weesp",
+        "country": "Nederland"
+      }
+    },
+    "items": {
+      "item": {
+        "customer_relation_name": "Altacel",
+        "customer_relation_name_email": "repro@altacel.nl",
+        "delivery_date": "[current date] + 1",
+        "measurements": {
+          "label_horizontal_gap": "0",
+          "lpc": "4444",
+          "press_side": "VZ",
+          "diecutnumber": "",
+          "toothing": "",
+          "numberofteeth": "",
+          "cornerradius": "",
+          "logo": ""
+        },
+        "printer": {
+          "name": "Altacel",
+          "press": "Uit het kleurprofiel (mail) te halen, bijvoorbeeld: Soloflex",
+          "substrate": "Uit het kleurprofiel (mail) te halen, bijvoorbeeld: TrPET",
+          "color_profile": "Uit de mail te halen, exacte match met wat wij intern hebben",
+          "dot_shape": "Komt uit de drukspecificatie van Altacel, die weer wordt bepaald vanuit het kleurprofiel."
+        },
+        "printerspecs": {
+          "spec_name": "Via Kleurprofiel te achterhalen",
+          "staggered": "0",
+          "staggered_type": "Geen",
+          "supporting_lines": "N"
+        },
+        "plates": {
+          "plate": {
+            "cutplates": "Y"
+          }
+        },
+        "colorproofs": {
+          "colorproof": [
+            {
+              "needed": "N",
+              "approval_needed": "N",
+              "type": "Kleurproef papier"
+            },
+            {
+              "needed": "N",
+              "approval_needed": "N",
+              "type": "Kleurproef transparant"
+            },
+            {
+              "needed": "N",
+              "approval_needed": "N",
+              "type": "100 procent enkelbeeld"
+            },
+            {
+              "needed": "N",
+              "approval_needed": "N",
+              "type": "100 procent op stand"
+            },
+            {
+              "needed": "N",
+              "type": "PDF view"
+            },
+            {
+              "needed": "N",
+              "type": "PDF enkelbeeld"
+            },
+            {
+              "needed": "N",
+              "type": "PDF op stand"
+            },
+            {
+              "needed": "N",
+              "type": "PDF kleur gescheiden"
+            },
+            {
+              "needed": "N",
+              "type": "PDF drukrapport"
+            }
+          ]
+        },
+      }
+    },
+    "briefing": "Dit is een test briefing die vanuit de xml in de portal wordt ingelezen."
+  }
+}
+
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
-# client = openai.OpenAI(
-#     # This is the default and can be omitted
-#     api_key=OPENAI_API_KEY
-# )
+client = openai.OpenAI(
+    # This is the default and can be omitted
+    api_key=OPENAI_API_KEY
+)
 
 def process_gpt(df, email):
     try:
@@ -135,17 +249,31 @@ def process_gpt(df, email):
 
         messages.append(user_role)
 
-        print(messages[2])
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            response_format={"type": "json_object"},
+            messages=messages
+        )
+        response_content = json.loads(response.choices[0].message.content)
 
-        return messages
+        order_form = combine_default_order_form(default_order_form, response_content)
 
-        # response = client.chat.completions.create(
-        #     model="gpt-4o",
-        #     response_format={"type": "json_object"},
-        #     messages=messages
-        # )
-        # response_content = json.loads(response.choices[0].message.content)
-        # return response_content
+        return order_form
     except Exception as e:
         print(e)
         return {}
+
+def combine_default_order_form(default_order_form, gpt_response):
+    try:
+        merged = merge(default_order_form, gpt_response)
+        delivery_date = datetime.now().strftime("%d-%m-%Y")
+
+        merged['order']['order_info']['delivery_date'] = delivery_date
+        merged['order']['items']['item']['delivery_date'] = delivery_date
+
+        for color in merged['order']['items']['item']['plates']['plate']['color']:
+            color['amount'] = "1"
+        return merged
+    except Exception as e:
+        print(e)
+        return default_order_form

@@ -9,6 +9,7 @@ import aws_helper_functions
 import boto3
 import pandas as pd
 import gpt_functions
+import json
 
 app = Flask(__name__)
 CORS(app)  # Apply CORS to all routes by default
@@ -78,7 +79,9 @@ def process_email_attachment():
     gpt_response = gpt_functions.process_gpt(df, '')
 
     df.to_csv('attachment_data.csv', index=False)
-    return jsonify({"status": "success", "message": 'uploaded files'}), 200
+
+    return jsonify({"status": "success", "message": json.dumps(gpt_response)}), 200
+    # return jsonify({"status": "success", "message": 'uploaded files'}), 200
 
 def upload_attachment_to_s3(file_name, file_content):
     uploaded = AWSFunctions.upload_file(file_name, file_content)
