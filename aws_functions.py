@@ -42,7 +42,6 @@ class AWSFunctions:
                 Key=file_name,
                 Body=file_content
             )
-            print(response)
             return True
         except Exception as e:
             print(f"Error uploading file {file_name} to S3: {e}")

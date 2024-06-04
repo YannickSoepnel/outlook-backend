@@ -6,7 +6,7 @@ import json5
 import openai
 import json
 from dotenv import load_dotenv
-load_dotenv()
+# load_dotenv()
 from mergedeep import merge
 
 
@@ -170,7 +170,7 @@ default_order_form = {
     "briefing": "Dit is een test briefing die vanuit de xml in de portal wordt ingelezen."
   }
 }
-
+load_dotenv('mysite/.env')
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 print(f"OPEN_API_KEY: {OPENAI_API_KEY}")
 client = openai.OpenAI(
