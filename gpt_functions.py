@@ -135,9 +135,9 @@ def process_gpt(df, email):
 
         messages.append(user_role)
 
-        print(messages)
+        print(messages[2])
 
-        return True
+        return messages
 
         # response = client.chat.completions.create(
         #     model="gpt-4o",
